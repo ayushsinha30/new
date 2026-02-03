@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valentine Deployment</title>
+
+<style>
+body {
+  margin:0;
+  background:#0d1117;
+  color:#c9d1d9;
+  font-family: "Courier New", monospace;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:10px;
+}
+
+.terminal {
+  background:#161b22;
+  width:100%;
+  max-width:780px;
+  border-radius:10px;
+  padding:16px;
+  box-shadow:0 20px 40px rgba(0,0,0,.6);
+}
+
+.header { display:flex; gap:8px; margin-bottom:12px; }
+.dot { width:12px;height:12px;border-radius:50%; }
+.red{background:#ff5f56} .yellow{background:#ffbd2e} .green{background:#27c93f}
+
+.line { margin:6px 0; font-size:14px; white-space:pre-wrap }
+.cmd { color:#58a6ff }
+.success { color:#3fb950; font-weight:bold }
+.aws { color:#f0b90b }
+
+.progress {
+  background:#21262d;
+  border-radius:6px;
+  overflow:hidden;
+  margin:10px 0;
+}
+.bar {
+  height:12px;
+  width:0%;
+  background:linear-gradient(90deg,#238636,#3fb950);
+}
+
+.buttons { text-align:center; margin-top:16px }
+button {
+  background:#238636;
+  border:none;
+  color:#fff;
+  padding:10px 18px;
+  margin:8px;
+  border-radius:6px;
+  font-family:inherit;
+  cursor:pointer;
+}
+button:hover { background:#2ea043 }
+.no { background:#da3633; position:absolute }
+
+@media(max-width:480px){
+  .line{font-size:13px}
+  button{width:90%}
+}
+</style>
+</head>
+
+<body>
+<div class="terminal" id="terminal">
+  <div class="header">
+    <div class="dot red"></div>
+    <div class="dot yellow"></div>
+    <div class="dot green"></div>
+  </div>
+</div>
+
+<script>
+const terminal = document.getElementById("terminal");
+
+const lines = [
+  "$ whoami",
+  "Ayush — Ethical Hacker 🧑‍💻",
+
+  "$ aws sts get-caller-identity",
+  "Aastha — DevOps Engineer ☁️",
+
+  "$ security-scan --target=Aastha",
+  "✔ No vulnerabilities found",
+  "⚠ Exception: Heart access already granted ❤️",
+
+  "$ aws deploy start-pipeline --service=valentine",
+  "CI/CD pipeline initialized 🚀",
+];
+
+let i = 0;
+
+function typeLine(text, cls="line"){
+  return new Promise(resolve=>{
+    const div=document.createElement("div");
+    div.className=cls;
+    terminal.appendChild(div);
+    let j=0;
+    const t=setInterval(()=>{
+      div.textContent += text[j++];
+      if(j===text.length){
+        clearInterval(t);
+        resolve();
+      }
+    },25);
+  });
+}
+
+async function start(){
+  for(;i<lines.length;i++){
+    const isCmd = lines[i].startsWith("$");
+    await typeLine(lines[i], isCmd?"line cmd":"line");
+  }
+
+  // Progress bar
+  const prog=document.createElement("div");
+  prog.className="progress";
+  prog.innerHTML='<div class="bar" id="bar"></div>';
+  terminal.appendChild(prog);
+
+  const stage=document.createElement("div");
+  stage.className="line";
+  terminal.appendChild(stage);
+
+  const stages=[
+    "Building Docker image...",
+    "Provisioning EC2...",
+    "Uploading memories to S3...",
+    "Monitoring via CloudWatch...",
+    "Running final checks..."
+  ];
+
+  let p=0,s=0;
+  const bar=document.getElementById("bar");
+
+  const interval=setInterval(()=>{
+    p+=20;
+    bar.style.width=p+"%";
+    stage.textContent=stages[s++]||"Almost done...";
+    if(p>=100){
+      clearInterval(interval);
+      stage.textContent="✔ Pipeline completed successfully";
+      showApproval();
+    }
+  },900);
+}
+
+function showApproval(){
+  const ok=document.createElement("div");
+  ok.className="line success";
+  ok.textContent="✔ Ready for production approval";
+  terminal.appendChild(ok);
+
+  const btns=document.createElement("div");
+  btns.className="buttons";
+  btns.innerHTML=`
+    <p>Approve Valentine Deployment (14 Feb)? ❤️</p>
+    <button onclick="approve()">Approve 🚀</button>
+    <button class="no" onmouseover="moveNo()">Reject ❌</button>
+  `;
+  terminal.appendChild(btns);
+}
+
+function approve(){
+  document.body.innerHTML=`
+  <div style="
+    background:#0d1117;
+    color:#3fb950;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    font-family:'Courier New',monospace;
+    text-align:center;
+    padding:20px;">
+    <h1>🚀 DEPLOYMENT SUCCESSFUL 🚀</h1>
+    <p style="font-size:18px;max-width:600px">
+      Aastha ❤️<br><br>
+      You approved the most important release of my life.<br>
+      Zero downtime. Full support. Infinite care.<br><br>
+      Artifacts generated:<br>
+      ✔ Coffee Date ☕<br>
+      ✔ Long Walk 🚶‍♂️🚶‍♀️<br>
+      ✔ Memories.zip 💖<br><br>
+      <i>I can break systems for a living,<br>
+      but you’re the only one who broke my defenses.</i>
+    </p>
+    <p>— Ayush</p>
+  </div>`;
+}
+
+function moveNo(){
+  const b=document.querySelector(".no");
+  b.style.left=Math.random()*(window.innerWidth-120)+"px";
+  b.style.top=Math.random()*(window.innerHeight-50)+"px";
+}
+
+start();
+</script>
+</body>
+</html>
